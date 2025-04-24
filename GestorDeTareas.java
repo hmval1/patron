@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 class GestorDeTareas {
     private List<Tarea> tareas = new ArrayList<>();
     private EstrategiaOrdenamiento estrategia;
