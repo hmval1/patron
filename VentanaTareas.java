@@ -1,22 +1,14 @@
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 public class VentanaTareas extends JFrame {
-private GestorDeTareas gestor;
+    private GestorDeTareas gestor;
     private UsuarioObservador observador;
 
-    // Componentes
     private JTextField campoNombre;
     private JTextField campoPrioridad;
-    private JTextField campoEstado;
+    private JComboBox<String> comboEstado;
     private JTextArea areaTareas;
     private JButton botonAgregar;
     private JButton botonOrdenarPrioridad;
@@ -24,21 +16,19 @@ private GestorDeTareas gestor;
 
     public VentanaTareas() {
         super("Gestor de tareas");
-
         gestor = new GestorDeTareas();
         observador = new UsuarioObservador("Usuario");
 
-        // Configuramos la ventana
         setSize(400, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
 
-        // Panel para los campos de texto y botones
+        // Panel para los campos de entrada y botón agregar
         JPanel panelEntrada = new JPanel();
-        panelEntrada.setLayout(new GridLayout(4, 2));
+        panelEntrada.setLayout(new GridLayout(4, 2, 5, 5));
+        panelEntrada.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Campos
-        panelEntrada.add(new JLabel("Nombre de tarea:"));
+        panelEntrada.add(new JLabel("Nombre de la tarea:"));
         campoNombre = new JTextField();
         panelEntrada.add(campoNombre);
 
@@ -47,75 +37,80 @@ private GestorDeTareas gestor;
         panelEntrada.add(campoPrioridad);
 
         panelEntrada.add(new JLabel("Estado (Pendiente, En progreso, Completada):"));
-        campoEstado = new JTextField();
-        panelEntrada.add(campoEstado);
+        comboEstado = new JComboBox<>(new String[] {"Pendiente", "En progreso", "Completada"});
+        panelEntrada.add(comboEstado);
 
         botonAgregar = new JButton("Agregar tarea");
         panelEntrada.add(botonAgregar);
 
-        // Panel de botones de ordenamiento
-        JPanel panelBotones = new JPanel();
-        botonOrdenarPrioridad = new JButton("Ordenar por prioridad");
-        botonOrdenarEstado = new JButton("Ordenar por estado");
-        panelBotones.add(botonOrdenarPrioridad);
-        panelBotones.add(botonOrdenarEstado);
+        // Espacio vacío para alinear
+        panelEntrada.add(new JLabel());
 
-        // Área de texto para mostrar tareas
-        areaTareas = new JTextArea();
+        // Área de tareas y scroll
+        areaTareas = new JTextArea(10, 30);
         areaTareas.setEditable(false);
         JScrollPane scroll = new JScrollPane(areaTareas);
 
-        // Agregamos todo a la ventana
-        add(panelEntrada, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
-        add(panelBotones, BorderLayout.SOUTH);
+        // Panel para ordenar botones
+        JPanel panelOrden = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        botonOrdenarPrioridad = new JButton("Ordenar por prioridad");
+        botonOrdenarEstado = new JButton("Ordenar por estado");
+        panelOrden.add(botonOrdenarPrioridad);
+        panelOrden.add(botonOrdenarEstado);
 
-        // Acción del botón de agregar
+        // Agregar a la ventana principal
+        JPanel panelCentro = new JPanel(new BorderLayout());
+        panelCentro.add(scroll, BorderLayout.CENTER);
+        panelCentro.add(panelOrden, BorderLayout.SOUTH);
+
+        add(panelEntrada, BorderLayout.NORTH);
+        add(panelCentro, BorderLayout.CENTER);
+
+        // Acción botón agregar
         botonAgregar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nombre = campoNombre.getText();
+                String nombre = campoNombre.getText().trim();
+                if (nombre.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Debes darle un nombre a la tarea.");
+                    return;
+                }
                 int prioridad;
                 try {
-                    prioridad = Integer.parseInt(campoPrioridad.getText());
+                    prioridad = Integer.parseInt(campoPrioridad.getText().trim());
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Prioridad debe ser un número entero.");
                     return;
                 }
-                String estado = campoEstado.getText();
-                if (!estado.equals("Pendiente") && !estado.equals("En progreso") && !estado.equals("Completada")) {
-                    JOptionPane.showMessageDialog(null, "Estado inválido. Usa: Pendiente, En progreso o Completada.");
-                    return;
-                }
+
+                String estado = (String) comboEstado.getSelectedItem();
+
                 Tarea nueva = new Tarea(nombre, prioridad);
                 nueva.setEstado(estado);
                 nueva.agregarObservador(observador);
                 gestor.agregarTarea(nueva);
                 mostrarTareas();
+
+                campoNombre.setText("");
+                campoPrioridad.setText("");
+                comboEstado.setSelectedIndex(0);
             }
         });
 
-        // Botón para ordenar por prioridad
-        botonOrdenarPrioridad.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gestor.setEstrategia(new OrdenarPorPrioridad());
-                gestor.ordenarTareas();
-                mostrarTareas();
-            }
+        botonOrdenarPrioridad.addActionListener(e -> {
+            gestor.setEstrategia(new OrdenarPorPrioridad());
+            gestor.ordenarTareas();
+            mostrarTareas();
         });
 
-        // Botón para ordenar por estado
-        botonOrdenarEstado.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gestor.setEstrategia(new OrdenarPorEstado());
-                gestor.ordenarTareas();
-                mostrarTareas();
-            }
+        botonOrdenarEstado.addActionListener(e -> {
+            gestor.setEstrategia(new OrdenarPorEstado());
+            gestor.ordenarTareas();
+            mostrarTareas();
         });
 
         setVisible(true);
     }
 
-    // Método para mostrar todas las tareas en el área de texto
     private void mostrarTareas() {
         areaTareas.setText("");
         for (Tarea t : gestor.getTareas()) {
@@ -123,7 +118,6 @@ private GestorDeTareas gestor;
         }
     }
 
-    // Método principal para lanzar la interfaz
     public static void main(String[] args) {
         new VentanaTareas();
     }
