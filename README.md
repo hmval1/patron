@@ -6,3 +6,6 @@
 # Mary helen se encargó de organizar los archivos para que solamente se tuviera que editar lo que faltara. Además agregué la interfás gráfica y los comentarios que hacían falta. Tuve que cambiar el nombre el Main para que pudiera aparecer la interfás y convertirlo en uno.
 
 # Mauricio agrego las clases de Ordenar Por estado y Ordenar por prioridad, que se encargan Ordena una lista de tareas de menor a mayor prioridad y ordenar una lista de tareas alfabéticamente según su estado, tambien ayude en la creacion de la clase Tarea.
+
+# Joaquin 
+# ayude en la interfaz grafica en su diseño y el poner los botones de los cuales, una vez al ponerlos datos necesarios se guardan y si hay alguna equivocacion te avisa que hya una equivocacion y se manda a llamar a todo lo que realizamos anteriormente para que este pueda hacer una recopilacion de los datos y dar ordenadamente las tareas y por importancia 
